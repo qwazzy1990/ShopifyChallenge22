@@ -18,7 +18,14 @@ var deleteItemButton = `<button type="button" id="submit-delete" class="btn btn-
 var serialNosLabel = `<label> Serial Numbers: </label><br>`;
 var serialNoBoard = '<div style="height:120px;width:300px;border:1px solid #ccc;overflow-y:auto;" id="serialNoBoard"></div>';
 
-var deleteItemsLabel = `<label> Serial Numbers/Amounts: </label><br>`;
+var deleteItemsLabel = `<label> Serial Numbers/Qunatities: </label><br>`;
+
+//for the viewpage
+
+var viewAllButton = `<button type="button" id="view-all" class="btn btn-dark">View All Items</button>`;;
+var viewByAmountButton=`<button type="button" id="view-amnt" class="btn btn-dark">View By Amount</button>`;;
+var viewByManufacturerButton = `<button type="button" id="view-manufacturer" class="btn btn-dark">View By Manufacturer</button>`;;
+var viewByNameButton = `<button type="button" id="view-name" class="btn btn-dark">View By Name</button>`;;
 
 
 
@@ -65,6 +72,14 @@ $(document).ready(function () {
 
 	});
 
+	$('#btn-view').click(()=>{
+		$('#main-div').empty();
+		$(`#main-div`).append(getViewPage());
+		$(`#view-all`).click(()=>{
+			alert("viewing all");
+		});
+	});
+
 
 
 });
@@ -84,7 +99,7 @@ $(document).ready(function () {
 
 
 
-
+//main page for adding and editing
 function getMainPage()
 {
 	var s =  `<div class=\"jumbotron jumbotron-fluid\" id=\"homepage-jumbotron\">`
@@ -105,6 +120,8 @@ function getMainPage()
 
 }
 
+
+//make serial numbers list
 function makeSerialNoList(data)
 {
 	var s = `<ul>`;
@@ -118,6 +135,8 @@ function makeSerialNoList(data)
 	return s;
 }
 
+
+//delete page
 function getDeletePage()
 {
 	var s =  `<div class=\"jumbotron jumbotron-fluid\" id=\"homepage-jumbotron\">`
@@ -148,3 +167,18 @@ function makeDeleteList(data)
 	s += `</ul>`;
 	return s;
 }
+
+
+//for the view page
+
+function getViewPage()
+{
+	var s = `<div class=\"jumbotron jumbotron-fluid\" id=\"homepage-jumbotron\"><div class=\"container center\" id=\"add-container\"><br>`
+	+`${viewAllButton} <label> View all items in inventory: Results in message board </label>`
+	+`<br><br><br>${viewByAmountButton} <label> Will return all items with the number of units\nat most as the amount enetered:  Results in message board </label><br><br><input type="text" class="view-input"></label>`
+	+`<br><br><br>${viewByManufacturerButton}<label> Will return all items made by the manufacturer entered:  Results in message board </label><br><br><input type="text" class="view-input"></label><br><br><br>`
+	+`${viewByNameButton}<label> Will return all items with the name entered:  Results in message board </label><br><br><input type="text" class="view-input"></label>`
+	+`</div></div>`;
+	return s;
+}
+
