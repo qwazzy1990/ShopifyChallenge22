@@ -1,12 +1,21 @@
 //labels and inputs
-var nameLabel =  `<label for=\"name\"> Item Name: </label>`;
-var nameField = `<input type="text" id="name" name="name" />`;
-var manufacturerLabel =  `<label for=\"manufacturer\"> Manufacturer Name: </label>`;
-var manufacturerInput = `<input type="text" id="manufacturer" name="manufacturer" />`;
-var serialNoLabel =  `<label for=\"serialNo\"> Serial Number: </label>`;
-var serialNoInput = `<input type="text" id="serialNo" name="serialNo" />`;
-var quantityLabel = `<label for=\"quantity\"> Quantity:</label>`;
-var quantityInput = `<input type="text" id="quantityNo" name="quantityNo" />`;
+var nameLabel = `<label for=\"name\"> Item Name: </label>`;
+var nameLabelNew = `<label for=\"name\"> New Item Name: </label>`;
+var nameField = `<input type="text" id="name" class="data-input" name="name" />`;
+var nameFieldNew = `<input type="text" id="name-new" class="data-input" name="name" />`;
+
+
+var manufacturerLabel = `<label for=\"manufacturer\"> Manufacturer Name: </label>`;
+var manufacturerLabelNew = `<label for=\"manufacturer\"> New Manufacturer Name: </label>`;
+var manufacturerInput = `<input type="text" id="manufacturer" class="data-input" name="manufacturer" />`;
+var manufacturerInputNew = `<input type="text" id="manufacturer-new" class="data-input" name="manufacturer" />`;
+
+
+var serialNoLabel = `<label for=\"serialNo\"> Serial Number: </label>`;
+var serialNoInput = `<input type="text" id="serialNo" class="data-input" name="serialNo" />`;
+
+var quantityLabel = `<label for=\"quantityNo\"> Quantity:</label>`;
+var quantityInput = `<input type="text" id="quantityNo" class="data-input" name="quantityNo" />`;
 
 //buttons
 var addItemButton = `<button type="button" id="submit-add" class="btn btn-dark">Add Item</button>`;
@@ -15,15 +24,16 @@ var deleteItemButton = `<button type="button" id="submit-delete" class="btn btn-
 
 
 //labels for scrollable box
-var serialNosLabel = `<label> Serial Numbers: </label><br>`;
-var serialNoBoard = '<div style="height:120px;width:300px;border:1px solid #ccc;overflow-y:auto;" id="serialNoBoard"></div>';
+var editLabel = `<label> Name, Manufacturer, Serial Number: </label><br>`;
+var editBoard = '<div style="height:120px;width:300px;border:1px solid #ccc;overflow-y:auto;" id="serialNoBoard"></div>';
 
-var deleteItemsLabel = `<label> Serial Numbers/Qunatities: </label><br>`;
+var deleteItemsLabel = `<label> Name, Manufacturer, Quantity: </label><br>`;
+var deleteBoard = '<div style="height:120px;width:300px;border:1px solid #ccc;overflow-y:auto;" id="serialNoBoard"></div>';
 
 //for the viewpage
 
 var viewAllButton = `<button type="button" id="view-all" class="btn btn-dark">View All Items</button>`;;
-var viewByAmountButton=`<button type="button" id="view-amnt" class="btn btn-dark">View By Amount</button>`;;
+var viewByAmountButton = `<button type="button" id="view-amnt" class="btn btn-dark">View By Amount</button>`;;
 var viewByManufacturerButton = `<button type="button" id="view-manufacturer" class="btn btn-dark">View By Manufacturer</button>`;;
 var viewByNameButton = `<button type="button" id="view-name" class="btn btn-dark">View By Name</button>`;;
 
@@ -32,54 +42,234 @@ var viewByNameButton = `<button type="button" id="view-name" class="btn btn-dark
 
 $(document).ready(function () {
 
-	
-	//load uploadpage.html
-	$('#btn-add').click(() => {
-	
-		$('#main-div').empty();
-		$('#main-div').append(getMainPage());
-		$('#add-container').append(addItemButton);
-		//$('.btn-navbar').attr('disabled', false);
-		//$('#btn-add').attr('disabled', true);
-		
-	});
 
-	$('#btn-edit').click(()=>{
+	//load addpage
+	$('#btn-add').click(() => {
+
+		$('#main-div').empty();
+		$('#main-div').append(getAddPage());
+		$('#add-container').append(addItemButton);
+
+	});//end add tab
+
+	//edit tab
+	$('#btn-edit').click(() => {
 		//send search page
 		$('#main-div').empty();
-		$('#main-div').append(getMainPage());
+		$('#main-div').append(getEditPage());
 		$(`#add-container`).append(editItemButton);
-		$('#main-div').append(serialNosLabel);
-		$('#main-div').append(serialNoBoard);
-		$('#serialNoBoard').append(makeSerialNoList([1111, 222, 333, 444, 55, 555, 6666, 666, 6655]));
+		$('#main-div').append(editLabel);
+		$('#main-div').append(editBoard);
+		$.ajax({
+			type: 'GET',
+			url: '/editBoard',
+			success: (data) => {
+				if (data.status == 200) {
+					$('#serialNoBoard').append(makeEditList(data.items));
+				} else {
+					alert("Error getting items")
+				}
+			},
+			fail: (error) => {
+				alert(error);
+			}
 
 
-	});
+		});//end ajax
 
-	$('#btn-delete').click(()=>{
+
+	});//end edit tab
+
+	//delete tab
+	$('#btn-delete').click(() => {
 		//send delete page
 		//send search page
 		$('#main-div').empty();
 		$('#main-div').append(getDeletePage());
 		$('#add-container').append(deleteItemButton);
 		$('#main-div').append(deleteItemsLabel);
-		$('#main-div').append(serialNoBoard);
-		$('#serialNoBoard').append(makeDeleteList([{sNo:123, amnt:22}, {sNo:22222, amnt:3333}, {sNo:12345, amnt:666}, {sNo:444, amnt:123}, {sNo:55, amnt:222}]));
+		$('#main-div').append(deleteBoard);
+		$.ajax({
+			type: 'GET',
+			url: '/deleteBoard',
+			success: (data) => {
+				if (data.status == 200) {
+					$('#serialNoBoard').append(makeDeleteList(data.items));
 
+				}
 
+			},
+			fail: (error) => {
 
+			}
+		});//end ajax
+	});//end deletetab
 
-
-	});
-
-	$('#btn-view').click(()=>{
+	//view tab
+	$('#btn-view').click(() => {
 		$('#main-div').empty();
 		$(`#main-div`).append(getViewPage());
-		$(`#view-all`).click(()=>{
+		$(`#view-all`).click(() => {
 			alert("viewing all");
 		});
-	});
+	});//end view tab
 
+
+	
+
+	//ajax call for adding an item
+	$(document).on("click", "#submit-add", () => {
+		var name = $('#name').val();
+		var manufacturer = $('#manufacturer').val();
+		var sNum = $('#serialNo').val();
+		$.ajax({
+			type: 'POST',
+			url: '/addItem',
+			data: {
+				name: name,
+				manufacturer: manufacturer,
+				sNum: sNum
+			},
+			success: function (data) {
+				if (data.status == 200) $(`#message-board-list`).append(`<li>Successfully added ${name} manufactured by ${manufacturer} with serial number ${sNum} at ${data.time}</li>`);
+				else $(`#message-board-list`).append(`<li>Failed to add item</li>`);
+			},
+			fail: function (error) {
+				$(`#message-board-list`).append(`<li>Failed to add item</li>`);
+			}
+
+		});//end ajax
+
+
+	});//end callback
+
+	//ajax call for editing an item
+	$(document).on('click', '#submit-edit', () => {
+		var oldName = $(`#name`).val();
+		var newName = $(`#name-new`).val();
+		var oldManufacturer = $(`#manufacturer`).val();
+		var newManufacturer = $(`#manufacturer-new`).val();
+		var serialNumber = $(`#serialNo`).val();
+		$.ajax({
+			type: 'POST',
+			url: '/editItem',
+			data: {
+				oldName: oldName,
+				newName: newName,
+				oldManufacturer: oldManufacturer,
+				newManufacturer: newManufacturer,
+				serialNumber: parseInt(serialNumber)
+			},
+			success: (data) => {
+				//valid return status
+				if (data.status == 200) {
+					$(`#message-board-list`).append(`<li>Successfully edited ${data.oldName} manufactured by ${data.oldManufacturer} with serial number ${data.serialNumber}, to ${data.newName} manufactured by ${data.newManufacturer} at ${data.time}</li>`);
+
+					//nested ajax
+					$.ajax({
+						type: 'GET',
+						url: '/editBoard',
+						//success
+						success: (data) => {
+							if (data.status == 200) {
+								$(`#serialNoBoard`).empty();
+								$('#serialNoBoard').append(makeEditList(data.items));
+							} else {
+								alert("Error getting items")
+							}
+						},//end success
+
+		
+						fail: (error) => {
+							alert(error);
+						}//emd fail
+
+
+					});//end ajax
+				}//end valid return status
+
+				//if editing the item using the same parameters for name and manufacturer
+				else if(data.status == 401)
+				{
+					$(`#message-board-list`).append(`<li>Please enter a new name or new manufacturer or both (${data.time})</li>`);
+
+				}//end if
+				else if(data.status == 402)
+				{
+
+				}
+				else if(data.status == 403){
+
+				}else if(data.status == 404){
+
+				}
+
+			},//end success
+			fail: (error) => {
+
+			}
+
+		});//end ajax
+	});//end callback
+
+	// call for deleting an item
+	$(document).on("click", "#submit-delete", () => {
+		var name = $(`#name`).val();
+		var manufacturer = $(`#manufacturer`).val();
+		var amount = $(`#quantityNo`).val();
+		$.ajax({
+			type: 'POST',
+			url: '/deleteItem',
+			data: {
+				name: name,
+				manufacturer: manufacturer,
+				amount: amount
+			},
+			//success
+			success: (data) => {
+
+				//if valid request sent
+				if (data.status == 200) {
+					$(`#message-board-list`).append(`<li>Successfully deleted ${data.amount} units of ${data.name} manufactured by ${data.manufacturer} at ${data.time}</li>`);
+					$(`#serialNoBoard`).empty();
+					//nested ajax
+					$.ajax({
+						type: 'GET',
+						url: '/deleteBoard',
+						success: (data) => {
+							if (data.status == 200) {
+								$('#serialNoBoard').append(makeDeleteList(data.items));
+
+							}
+
+						},
+						fail: (error) => {
+
+						}
+					});//end ajax
+
+				}
+				//tried deleting an empty item
+				else if(data.status == 400){
+					$(`#message-board-list`).append(`<li>There is no such item with the name ${name} manufactured by ${manufacturer} (${data.time})</li>`);
+
+				}//deleting less than 1 item error
+				else if(data.status == 401){
+					$(`#message-board-list`).append(`<li>Enter an integer amount greater than 0 (${data.time})</li>`);
+
+				}
+				//server error
+				else if(data.status == 404){
+					$(`#message-board-list`).append(`<li>Server Error ${data.time}</li>`);
+
+				}
+			},//end success
+			fail: (err) => {
+				$(`#message-board-list`).append(`<li>${err}</li>`);
+
+			}//end failure
+		});//end ajax
+	});//end callback
 
 
 });
@@ -100,35 +290,51 @@ $(document).ready(function () {
 
 
 //main page for adding and editing
-function getMainPage()
-{
-	var s =  `<div class=\"jumbotron jumbotron-fluid\" id=\"homepage-jumbotron\">`
-	 + `<div class=\"container center\" id=\"add-container\">`
-	 +`<br>`
-	 + `${nameLabel} ${nameField}` 
-	 +`<br><br>`
-	 + `${manufacturerLabel} ${manufacturerInput}`
-	 +'<br><br>'
-	 +`${serialNoLabel} ${serialNoInput}`
-	 +`<br><br>`
-	 +`${quantityLabel} ${quantityInput}`
-	 +'<br><br>'
-	 + "</div>"
-	 + "</div>";
+function getAddPage() {
+	var s = `<div class=\"jumbotron jumbotron-fluid\" id=\"homepage-jumbotron\">`
+		+ `<div class=\"container center\" id=\"add-container\">`
+		+ `<br>`
+		+ `${nameLabel} ${nameField}`
+		+ `<br><br>`
+		+ `${manufacturerLabel} ${manufacturerInput}`
+		+ '<br><br>'
+		+ `${serialNoLabel} ${serialNoInput}`
+		+ '<br><br>'
+		+ "</div>"
+		+ "</div>";
 
-	 return s;
+	return s;
 
+}
+
+function getEditPage() {
+	var s = `<div class=\"jumbotron jumbotron-fluid\" id=\"homepage-jumbotron\">`
+		+ `<div class=\"container center\" id=\"add-container\">`
+		+ `<br>`
+		+ `${nameLabel} ${nameField}<br>`
+		+ `${nameLabelNew} ${nameFieldNew}`
+		+ `<br><br>`
+		+ `${manufacturerLabel} ${manufacturerInput}<br>`
+		+ `${manufacturerLabelNew} ${manufacturerInputNew}<br><br>`
+		+ `${serialNoLabel} ${serialNoInput}`
+		+ '<br><br>'
+		+ "</div>"
+		+ "</div>";
+
+	return s;
 }
 
 
 //make serial numbers list
-function makeSerialNoList(data)
-{
+function makeEditList(data) {
 	var s = `<ul>`;
-	for(var i = 0; i < data.length; i++)
-	{
+	for (var i = 0; i < data.length; i++) {
 		s += `<li>`
-		s += String(data[i]);
+		s += String(data[i].name);
+		s += ", ";
+		s += String(data[i].manufacturer);
+		s += ", "
+		s += String(data[i].serialNumber);
 		s += `</li>`;
 	}
 	s += `</ul>`;
@@ -137,31 +343,33 @@ function makeSerialNoList(data)
 
 
 //delete page
-function getDeletePage()
-{
-	var s =  `<div class=\"jumbotron jumbotron-fluid\" id=\"homepage-jumbotron\">`
-	 + `<div class=\"container center\" id=\"add-container\">`
-	 +`<br><br><br>`
-	 +`${serialNoLabel} ${serialNoInput}`
-	 +`<br><br>`
-	 +`${quantityLabel} ${quantityInput}`
-	 +'<br><br>'
-	 + "</div>"
-	 + "</div>";
+function getDeletePage() {
+	var s = `<div class=\"jumbotron jumbotron-fluid\" id=\"homepage-jumbotron\">`
+		+ `<div class=\"container center\" id=\"add-container\">`
+		+ `<br><br><br>`
+		+ `${nameLabel} ${nameField}`
+		+ `<br><br>`
+		+ `${manufacturerLabel} ${manufacturerInput}`
+		+ `<br><br>`
+		+ `${quantityLabel} ${quantityInput}`
+		+ '<br><br>'
+		+ "</div>"
+		+ "</div>";
 
-	 return s;
+	return s;
 
 }
 
-function makeDeleteList(data)
-{
+function makeDeleteList(data) {
 	var s = `<ul>`;
-	for(var i = 0; i < data.length; i++)
-	{
+	for (var i = 0; i < data.length; i++) {
 		s += `<li>`
-		s += String(data[i].sNo);
-		s += "/"
-		s += String(data[i].amnt);
+		s += String(data[i].name);
+		s += ", "
+		s += String(data[i].manufacturer);
+		s += ", "
+		s += String(data[i].amount);
+
 		s += `</li>`;
 	}
 	s += `</ul>`;
@@ -171,14 +379,22 @@ function makeDeleteList(data)
 
 //for the view page
 
-function getViewPage()
-{
+function getViewPage() {
 	var s = `<div class=\"jumbotron jumbotron-fluid\" id=\"homepage-jumbotron\"><div class=\"container center\" id=\"add-container\"><br>`
-	+`${viewAllButton} <label> View all items in inventory: Results in message board </label>`
-	+`<br><br><br>${viewByAmountButton} <label> Will return all items with the number of units\nat most as the amount enetered:  Results in message board </label><br><br><input type="text" class="view-input"></label>`
-	+`<br><br><br>${viewByManufacturerButton}<label> Will return all items made by the manufacturer entered:  Results in message board </label><br><br><input type="text" class="view-input"></label><br><br><br>`
-	+`${viewByNameButton}<label> Will return all items with the name entered:  Results in message board </label><br><br><input type="text" class="view-input"></label>`
-	+`</div></div>`;
+		+ `${viewAllButton} <label> View all items in inventory: Results in message board </label>`
+		+ `<br><br><br>${viewByAmountButton} <label> Will return all items with the number of units\nat most as the amount enetered:  Results in message board </label><br><br><input type="text" class="view-input"></label>`
+		+ `<br><br><br>${viewByManufacturerButton}<label> Will return all items made by the manufacturer entered:  Results in message board </label><br><br><input type="text" class="view-input"></label><br><br><br>`
+		+ `${viewByNameButton}<label> Will return all items with the name entered:  Results in message board </label><br><br><input type="text" class="view-input"></label>`
+		+ `</div></div>`;
 	return s;
+}
+
+
+function emptyElements(elements) {
+	$(`#name`).empty();
+	for (var i = 0; i < elements.length; i++) {
+		console.log(elements[i]);
+		$(`${elements[i]}`).empty();
+	}
 }
 
