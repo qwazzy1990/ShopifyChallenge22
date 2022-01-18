@@ -109,13 +109,10 @@ $(document).ready(function () {
 	$('#btn-view').click(() => {
 		$('#main-div').empty();
 		$(`#main-div`).append(getViewPage());
-		$(`#view-all`).click(() => {
-			alert("viewing all");
-		});
 	});//end view tab
 
 
-	
+
 
 	//ajax call for adding an item
 	$(document).on("click", "#submit-add", () => {
@@ -131,11 +128,11 @@ $(document).ready(function () {
 				sNum: sNum
 			},
 			success: function (data) {
-				if (data.status == 200) $(`#message-board-list`).append(`<li>Successfully added ${name} manufactured by ${manufacturer} with serial number ${sNum} at ${data.time}</li>`);
-				else $(`#message-board-list`).append(`<li>Failed to add item</li>`);
+				if (data.status == 200) $(`#message-board-list`).append(`<li>Successfully added ${data.name} manufactured by ${data.manufacturer} with serial number ${data.sNum} at ${data.time}</li>`);
+				else $(`#message-board-list`).append(`<li>Serial Number already exists. Cannot add two items with the same serial number: (${data.time})</li>`);
 			},
 			fail: function (error) {
-				$(`#message-board-list`).append(`<li>Failed to add item</li>`);
+				$(`#message-board-list`).append(`<li>Server Error</li>`);
 			}
 
 		});//end ajax
@@ -179,7 +176,7 @@ $(document).ready(function () {
 							}
 						},//end success
 
-		
+
 						fail: (error) => {
 							alert(error);
 						}//emd fail
@@ -189,28 +186,35 @@ $(document).ready(function () {
 				}//end valid return status
 
 				//if editing the item using the same parameters for name and manufacturer
-				else if(data.status == 401)
-				{
-					$(`#message-board-list`).append(`<li>Please enter a new name or new manufacturer or both (${data.time})</li>`);
+				else if (data.status == 401) {
+					$(`#message-board-list`).append(`<li>Please enter a new name, new manufacturer or both (${data.time})</li>`);
 
 				}//end if
-				else if(data.status == 402)
-				{
+
+				//if item does not contain serial number
+				else if (data.status == 402) {
+					$(`#message-board-list`).append(`<li>Could not find serial number ${serialNumber} for item ${data.oldName} manufactured by ${data.oldManufacturer}(${data.time})</li>`);
 
 				}
-				else if(data.status == 403){
 
-				}else if(data.status == 404){
+				//if there is no item with the old name and old manufacturer
+				else if (data.status == 403) {
+					$(`#message-board-list`).append(`<li>Could not find item ${data.oldName} manufactured by ${data.oldManufacturer}(${data.time})</li>`);
 
-				}
+
+				} else if (data.status == 404) {
+					$(`#message-board-list`).append(`<li>Server Error: (${data.time})</li>`);
+
+				}//end if
 
 			},//end success
 			fail: (error) => {
-
-			}
+				$(`#message-board-list`).append(`${error}`);
+			}//end fail
 
 		});//end ajax
 	});//end callback
+
 
 	// call for deleting an item
 	$(document).on("click", "#submit-delete", () => {
@@ -250,16 +254,16 @@ $(document).ready(function () {
 
 				}
 				//tried deleting an empty item
-				else if(data.status == 400){
+				else if (data.status == 400) {
 					$(`#message-board-list`).append(`<li>There is no such item with the name ${name} manufactured by ${manufacturer} (${data.time})</li>`);
 
 				}//deleting less than 1 item error
-				else if(data.status == 401){
+				else if (data.status == 401) {
 					$(`#message-board-list`).append(`<li>Enter an integer amount greater than 0 (${data.time})</li>`);
 
 				}
 				//server error
-				else if(data.status == 404){
+				else if (data.status == 404) {
 					$(`#message-board-list`).append(`<li>Server Error ${data.time}</li>`);
 
 				}
@@ -272,7 +276,114 @@ $(document).ready(function () {
 	});//end callback
 
 
-});
+	//view callbacks 
+
+	//view all
+	$(document).on("click", "#view-all", () => {
+		//ajax
+		console.log("viewing all");
+		$.ajax({
+			type: `POST`,
+			url: `/viewItems`,
+			data: {
+				mode: 0,
+				info: null
+			},
+			success: (data) => {
+				if (data.status == 200) {
+					appendViewItems(data, 0, null);
+				}
+
+			},
+			fail: (error) => {
+
+			}
+
+		});//end ajax
+	});//end callback
+
+
+	//view callbacks 
+
+	//view by amount
+	$(document).on("click", "#view-amnt", () => {
+		var mode = 1;
+		var amount = $(`#quantityNo`).val();
+		console.log(amount);
+		//ajax
+		$.ajax({
+			type: `POST`,
+			url: `/viewItems`,
+			data: {
+				mode: mode,
+				info: amount
+			},
+			success: (data) => {
+				if (data.status == 200) {
+					appendViewItems(data, 1, amount);
+				}
+			},
+			fail: (error) => {
+
+			}
+
+		});//end ajax
+	});//end view 
+
+
+	//view by name 
+	$(document).on("click", "#view-name", () => {
+		//ajax
+		var mode = 2;
+		var name = $(`#name`).val();
+		$.ajax({
+			type: `POST`,
+			url: `/viewItems`,
+			data: {
+				mode: mode,
+				info: name
+			},
+			success: (data) => {
+				if (data.status == 200) {
+					appendViewItems(data, 2, name);
+				}
+			},
+			fail: (error) => {
+
+			}
+
+		});//end ajax
+	});//end callback
+
+
+	//view by manufacturer 
+	$(document).on("click", "#view-manufacturer", () => {
+		//ajax
+		var mode = 3;
+		var manufacturer = $(`#manufacturer`).val();
+		$.ajax({
+			type: `POST`,
+			url: `/viewItems`,
+			data: {
+				mode: mode,
+				info: manufacturer
+			},
+			success: (data) => {
+				if (data.status == 200) {
+					appendViewItems(data, 3, manufacturer);
+				}
+			},
+			fail: (error) => {
+
+			}
+
+		});//end ajax
+	});//end callback
+
+
+
+
+});//end document.ready
 
 
 
@@ -286,7 +397,7 @@ $(document).ready(function () {
 
 
 
-
+/***HELPER FUCNTIONS */
 
 
 //main page for adding and editing
@@ -377,14 +488,12 @@ function makeDeleteList(data) {
 }
 
 
-//for the view page
-
 function getViewPage() {
 	var s = `<div class=\"jumbotron jumbotron-fluid\" id=\"homepage-jumbotron\"><div class=\"container center\" id=\"add-container\"><br>`
 		+ `${viewAllButton} <label> View all items in inventory: Results in message board </label>`
-		+ `<br><br><br>${viewByAmountButton} <label> Will return all items with the number of units\nat most as the amount enetered:  Results in message board </label><br><br><input type="text" class="view-input"></label>`
-		+ `<br><br><br>${viewByManufacturerButton}<label> Will return all items made by the manufacturer entered:  Results in message board </label><br><br><input type="text" class="view-input"></label><br><br><br>`
-		+ `${viewByNameButton}<label> Will return all items with the name entered:  Results in message board </label><br><br><input type="text" class="view-input"></label>`
+		+ `<br><br><br>${viewByAmountButton} <label> Will return all items with the number of units\nat most as the amount enetered:  Results in message board </label><br><br>${quantityInput}`
+		+ `<br><br><br><label>${viewByNameButton} Will return all items with the name entered:  Results in message board </label><br><br>${nameField}<br><br><br>`
+		+ `<label>${viewByManufacturerButton} Will return all items manufactured by the manufacturer entered:  Results in message board </label><br><br>${manufacturerInput}`
 		+ `</div></div>`;
 	return s;
 }
@@ -398,3 +507,33 @@ function emptyElements(elements) {
 	}
 }
 
+function appendViewItems(data, mode, key) {
+	//get the name, manufacturer, serial number
+	if (mode == 0) {
+		$(`#message-board-list`).append("LIST OF ALL ITEMS:");
+
+		for (var i = 0; i < data.items.length; i++) {
+			$(`#message-board-list`).append(`<li>Name: ${data.items[i].name}, Manufacturer: ${data.items[i].manufacturer}, Serial Number: ${data.items[i].serialNumber}, Time: ${data.time}</li>`);
+
+		}
+	} else if (mode == 1) {
+		$(`#message-board-list`).append(`LIST OF ALL ITEMS BY AMOUNT ENTERED ${key}:`);
+
+		for (var i = 0; i < data.items.length; i++) {
+			$(`#message-board-list`).append(`<li>Name: ${data.items[i].name}, Manufacturer: ${data.items[i].manufacturer}, Amount: ${data.items[i].amount}, Time: ${data.time}</li>`);
+
+		}
+	} else if (mode == 2) {
+		$(`#message-board-list`).append(`LIST OF ALL ITEMS BY NAME ${key}:`);
+		for (var i = 0; i < data.items.length; i++) {
+			$(`#message-board-list`).append(`<li>Manufacturer: ${data.items[i].manufacturer}, Serial Number: ${data.items[i].serialNumber}, Time: ${data.time}</li>`);
+
+		}
+	} else if (mode == 3) {
+		$(`#message-board-list`).append(`LIST OF ALL ITEMS BY MANUFACTURER ${key}:`);
+		for (var i = 0; i < data.items.length; i++) {
+			$(`#message-board-list`).append(`<li>Name: ${data.items[i].name}, Seial Number: ${data.items[i].serialNumber}, Time: ${data.time}</li>`);
+
+		}
+	}
+}

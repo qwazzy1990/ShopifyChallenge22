@@ -42,7 +42,7 @@ app.post('/addItem', (req, res) => {
         if (result == false) {
             data = {
                 status: 403,
-                message: `Serial Number already exists. Cannot add two items with the same serial number: (${time})`
+                time: time
             }
         } else {
 
@@ -118,6 +118,11 @@ app.post('/editItem', (req, res) => {
         //if there is no item with the name and manufacturer
         if (item == null) {
             data = {
+                oldName: oldName,
+                newName: newName,
+                oldManufacturer: oldManufacturer,
+                newManufacturer: newManufacturer,
+                serialNumber: serialNumber,
                 status: 403,
                 time: time
             };
@@ -129,6 +134,11 @@ app.post('/editItem', (req, res) => {
             //return error code
 
             data = {
+                oldName: oldName,
+                newName: newName,
+                oldManufacturer: oldManufacturer,
+                newManufacturer: newManufacturer,
+                serialNumber: serialNumber,
                 status: 402,
                 time: time
             };
@@ -137,6 +147,11 @@ app.post('/editItem', (req, res) => {
         //if the new name and new manufacturer are the same as the old name and old manufacturer, erro
         else if (Database.sameItem(oldName, newName, oldManufacturer, newManufacturer) == true) {
             data = {
+                oldName: oldName,
+                newName: newName,
+                oldManufacturer: oldManufacturer,
+                newManufacturer: newManufacturer,
+                serialNumber: serialNumber,
                 status: 401,
                 time: time
             };
@@ -230,6 +245,7 @@ app.post('/deleteItem', (req, res) => {
         }//invalid condition
         
         else {
+            if(amount > item.amount)amount = item.amount;
             Database.deleteItem(name, manufacturer, amount);
 
             data = {
@@ -256,6 +272,43 @@ app.post('/deleteItem', (req, res) => {
 
 
 
+
+//view items endpoints
+
+app.post('/viewItems', (req, res)=>{
+
+    var mode = parseInt(req.body.mode);
+    var info = req.body.info;
+    var data;
+    date = new Date();
+    time = formatTime(date.getHours(), date.getMinutes(), date.getSeconds());
+    try{
+
+        var items = Database.viewItems(mode, info);
+        if(items.length == 0)
+        {
+            data = {
+                status: 404, 
+                items: items,
+                time: time
+            }
+        }else {
+            data = {
+                status: 200, 
+                items: items,
+                time: time
+            }
+        }
+
+    }catch(e){
+        data = {
+            status: 404,
+            time: time
+        }
+    }
+
+    res.send(data);
+});
 
 
 Database.addItem("johnny", "craig", 197009);
@@ -292,7 +345,7 @@ function formatTime(hours, minutes, seconds) {
     }
     t += minutes;
     t += ":";
-    if (parseInt(seconds) < 0) {
+    if (parseInt(seconds) < 10) {
         t += "0";
     }
     t += seconds;
