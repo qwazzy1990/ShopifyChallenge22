@@ -32,10 +32,16 @@ var deleteBoard = '<div style="height:120px;width:300px;border:1px solid #ccc;ov
 
 //for the viewpage
 
-var viewAllButton = `<button type="button" id="view-all" class="btn btn-dark">View All Items</button>`;;
-var viewByAmountButton = `<button type="button" id="view-amnt" class="btn btn-dark">View By Amount</button>`;;
-var viewByManufacturerButton = `<button type="button" id="view-manufacturer" class="btn btn-dark">View By Manufacturer</button>`;;
-var viewByNameButton = `<button type="button" id="view-name" class="btn btn-dark">View By Name</button>`;;
+var viewAllButton = `<button type="button" id="view-all" class="btn btn-dark">View All Items</button>`;
+var viewByAmountButton = `<button type="button" id="view-amnt" class="btn btn-dark">View By Amount</button>`;
+var viewByManufacturerButton = `<button type="button" id="view-manufacturer" class="btn btn-dark">View By Manufacturer</button>`;
+var viewByNameButton = `<button type="button" id="view-name" class="btn btn-dark">View By Name</button>`;
+
+//for cvs page
+var saveCSV = `<button type="button" id="save-csv" class="btn btn-dark">Save your inventory to a CSV file</button>`;
+var downloadCSV = `<button type="submit" id="download-csv">Download Csv File</button>`;
+
+
 
 
 
@@ -112,6 +118,15 @@ $(document).ready(function () {
 	});//end view tab
 
 
+	//csv button
+
+	$(`#btn-csv`).click(() => {
+		$('#main-div').empty();
+		$(`#main-div`).append(getCsvPage());
+
+	});//end callback
+
+
 
 
 	//ajax call for adding an item
@@ -128,11 +143,11 @@ $(document).ready(function () {
 				sNum: sNum
 			},
 			success: function (data) {
-				if (data.status == 200) $(`#message-board-list`).append(`<li>Successfully added ${data.name} manufactured by ${data.manufacturer} with serial number ${data.sNum} at ${data.time}</li>`);
-				else $(`#message-board-list`).append(`<li>Serial Number already exists. Cannot add two items with the same serial number: (${data.time})</li>`);
+				if (data.status == 200) $(`#message-board-list`).append(`<li>Successfully added ${data.name} manufactured by ${data.manufacturer} with serial number ${data.sNum} at ${data.time}</li><br>`);
+				else $(`#message-board-list`).append(`<li>Serial Number already exists. Cannot add two items with the same serial number: (${data.time})</li><br>`);
 			},
 			fail: function (error) {
-				$(`#message-board-list`).append(`<li>Server Error</li>`);
+				$(`#message-board-list`).append(`<li>Server Error</li><br>`);
 			}
 
 		});//end ajax
@@ -160,7 +175,7 @@ $(document).ready(function () {
 			success: (data) => {
 				//valid return status
 				if (data.status == 200) {
-					$(`#message-board-list`).append(`<li>Successfully edited ${data.oldName} manufactured by ${data.oldManufacturer} with serial number ${data.serialNumber}, to ${data.newName} manufactured by ${data.newManufacturer} at ${data.time}</li>`);
+					$(`#message-board-list`).append(`<li>Successfully edited ${data.oldName} manufactured by ${data.oldManufacturer} with serial number ${data.serialNumber}, to ${data.newName} manufactured by ${data.newManufacturer} at ${data.time}</li><br>`);
 
 					//nested ajax
 					$.ajax({
@@ -187,29 +202,29 @@ $(document).ready(function () {
 
 				//if editing the item using the same parameters for name and manufacturer
 				else if (data.status == 401) {
-					$(`#message-board-list`).append(`<li>Please enter a new name, new manufacturer or both (${data.time})</li>`);
+					$(`#message-board-list`).append(`<li>Please enter a new name, new manufacturer or both (${data.time})</li><br>`);
 
 				}//end if
 
 				//if item does not contain serial number
 				else if (data.status == 402) {
-					$(`#message-board-list`).append(`<li>Could not find serial number ${serialNumber} for item ${data.oldName} manufactured by ${data.oldManufacturer}(${data.time})</li>`);
+					$(`#message-board-list`).append(`<li>Could not find serial number ${serialNumber} for item ${data.oldName} manufactured by ${data.oldManufacturer}(${data.time})</li><br>`);
 
 				}
 
 				//if there is no item with the old name and old manufacturer
 				else if (data.status == 403) {
-					$(`#message-board-list`).append(`<li>Could not find item ${data.oldName} manufactured by ${data.oldManufacturer}(${data.time})</li>`);
+					$(`#message-board-list`).append(`<li>Could not find item ${data.oldName} manufactured by ${data.oldManufacturer}(${data.time})</li><br>`);
 
 
 				} else if (data.status == 404) {
-					$(`#message-board-list`).append(`<li>Server Error: (${data.time})</li>`);
+					$(`#message-board-list`).append(`<li>Server Error: (${data.time})</li><br>`);
 
 				}//end if
 
 			},//end success
 			fail: (error) => {
-				$(`#message-board-list`).append(`${error}`);
+				$(`#message-board-list`).append(`<li>Server Error</li><br>`);
 			}//end fail
 
 		});//end ajax
@@ -234,7 +249,7 @@ $(document).ready(function () {
 
 				//if valid request sent
 				if (data.status == 200) {
-					$(`#message-board-list`).append(`<li>Successfully deleted ${data.amount} units of ${data.name} manufactured by ${data.manufacturer} at ${data.time}</li>`);
+					$(`#message-board-list`).append(`<li>Successfully deleted ${data.amount} units of ${data.name} manufactured by ${data.manufacturer} at ${data.time}</li><br>`);
 					$(`#serialNoBoard`).empty();
 					//nested ajax
 					$.ajax({
@@ -255,21 +270,21 @@ $(document).ready(function () {
 				}
 				//tried deleting an empty item
 				else if (data.status == 400) {
-					$(`#message-board-list`).append(`<li>There is no such item with the name ${name} manufactured by ${manufacturer} (${data.time})</li>`);
+					$(`#message-board-list`).append(`<li>There is no such item with the name ${name} manufactured by ${manufacturer} (${data.time})</li><br>`);
 
 				}//deleting less than 1 item error
 				else if (data.status == 401) {
-					$(`#message-board-list`).append(`<li>Enter an integer amount greater than 0 (${data.time})</li>`);
+					$(`#message-board-list`).append(`<li>Enter an integer amount greater than 0 (${data.time})</li><br>`);
 
 				}
 				//server error
 				else if (data.status == 404) {
-					$(`#message-board-list`).append(`<li>Server Error ${data.time}</li>`);
+					$(`#message-board-list`).append(`<li>Server Error ${data.time}</li><br>`);
 
 				}
 			},//end success
 			fail: (err) => {
-				$(`#message-board-list`).append(`<li>${err}</li>`);
+				$(`#message-board-list`).append(`<li>${err}</li><br>`);
 
 			}//end failure
 		});//end ajax
@@ -381,7 +396,41 @@ $(document).ready(function () {
 	});//end callback
 
 
+	$(document).on("click", "#save-csv", () => {
+		$.ajax({
+			type: 'POST',
+			url: '/toCsv',
+			success: (data) => {
+				if (data.status == 200) {
+					$(`#message-board-list`).append(`<li>Successfully saved content to csv file at ${data.time}</li><br>`);
+				} else {
+					$(`#message-board-list`).append(`<li>Server Error ${data.time}</li><br>`);
 
+				}
+			},
+			fail: (error) => {
+				$(`#message-board-list`).append(`<li>${error}</li><br>`);
+
+			}
+		});
+	});
+
+	/*$(document).on("click", "#download-csv", () => {
+		$.ajax({
+			type: 'GET',
+			url: '/download',
+			success: (data) => {
+				console.log("here!!!");
+
+				console.log(data);
+				console.log("here!!!");
+			},
+			fail: (error) => {
+				$(`#message-board-list`).append(`<li>${error}</li><br>`);
+
+			}
+		});
+	});*/
 
 });//end document.ready
 
@@ -515,25 +564,52 @@ function appendViewItems(data, mode, key) {
 		for (var i = 0; i < data.items.length; i++) {
 			$(`#message-board-list`).append(`<li>Name: ${data.items[i].name}, Manufacturer: ${data.items[i].manufacturer}, Serial Number: ${data.items[i].serialNumber}, Time: ${data.time}</li>`);
 
-		}
-	} else if (mode == 1) {
+		}//end for
+
+	}//end if 
+
+	else if (mode == 1) {
 		$(`#message-board-list`).append(`LIST OF ALL ITEMS BY AMOUNT ENTERED ${key}:`);
 
 		for (var i = 0; i < data.items.length; i++) {
 			$(`#message-board-list`).append(`<li>Name: ${data.items[i].name}, Manufacturer: ${data.items[i].manufacturer}, Amount: ${data.items[i].amount}, Time: ${data.time}</li>`);
 
-		}
-	} else if (mode == 2) {
+		}//end for
+	}//end if 
+	else if (mode == 2) {
 		$(`#message-board-list`).append(`LIST OF ALL ITEMS BY NAME ${key}:`);
 		for (var i = 0; i < data.items.length; i++) {
 			$(`#message-board-list`).append(`<li>Manufacturer: ${data.items[i].manufacturer}, Serial Number: ${data.items[i].serialNumber}, Time: ${data.time}</li>`);
 
-		}
-	} else if (mode == 3) {
+		}//end for
+	}//end if 
+	else if (mode == 3) {
 		$(`#message-board-list`).append(`LIST OF ALL ITEMS BY MANUFACTURER ${key}:`);
 		for (var i = 0; i < data.items.length; i++) {
 			$(`#message-board-list`).append(`<li>Name: ${data.items[i].name}, Seial Number: ${data.items[i].serialNumber}, Time: ${data.time}</li>`);
 
-		}
-	}
+		}//end for
+	}//end if
+
+	$(`#message-board-list`).append("<br>");
+}//end function
+
+
+
+
+
+
+//csv functions
+
+function getCsvPage() {
+	var s = `<div class=\"jumbotron jumbotron-fluid\" id=\"homepage-jumbotron\">`
+		+ `<div class=\"container center\" id=\"add-container\"><br>`
+		+ `<br><br>${saveCSV}<br><br>`
+		+ `<form action="/download" method="get">${downloadCSV}</form>`
+		+ `<br><br>`
+		+ `</div>`
+		+ `</div>`;
+	return s;
 }
+
+//end file

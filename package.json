@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/qwazzy1990/ShopifyChallenge22#readme",
   "dependencies": {
+    "csv-writer": "^1.6.0",
     "express": "^4.17.2"
   }
 }

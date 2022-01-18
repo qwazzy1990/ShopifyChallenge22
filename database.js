@@ -48,7 +48,7 @@ class Database {
 
 		item.amount -= 1;
 		item.serialNumbers = arr;
-		var index = Database.hash(oldName, oldManufacturer);
+		var index = Database.hash(oldName + " " + oldManufacturer);
 		//case 1: there are no items left, in which case set the itemsTable[index] to null
 
 		if (item.amount == 0) {
@@ -223,7 +223,7 @@ class Database {
 		} else if (mode == 3) {
 			//view by manufacturer
 			Database.getByManufacturer(items, key);
-		} 
+		}
 
 		return items;
 
@@ -251,12 +251,9 @@ class Database {
 
 	//get a list of all items <= amount entered
 
-	static getByAmount(items, amount)
-	{
-		for(var i = 0; i < Database.MAX_SIZE; i++)
-		{
-			if(Database.itemsTable[i] != null && Database.itemsTable[i].amount <= amount)
-			{
+	static getByAmount(items, amount) {
+		for (var i = 0; i < Database.MAX_SIZE; i++) {
+			if (Database.itemsTable[i] != null && Database.itemsTable[i].amount <= amount) {
 				var item = Database.itemsTable[i];
 				items.push(item);
 			}
@@ -265,12 +262,9 @@ class Database {
 	}//end function
 
 	//get by name
-	static getByName(items, name)
-	{
-		for(var i = 0; i < Database.MAX_SIZE; i++)
-		{
-			if(Database.itemsTable[i] != null && Database.itemsTable[i].name.localeCompare(name) == 0)
-			{
+	static getByName(items, name) {
+		for (var i = 0; i < Database.MAX_SIZE; i++) {
+			if (Database.itemsTable[i] != null && Database.itemsTable[i].name.localeCompare(name) == 0) {
 				var item = Database.itemsTable[i];
 				for (var j = 0; j < item.serialNumbers.length; j++) {
 					var subItem = {
@@ -286,12 +280,9 @@ class Database {
 
 
 	//get by manufacturer
-	static getByManufacturer(items, manufacturer)
-	{
-		for(var i = 0; i < Database.MAX_SIZE; i++)
-		{
-			if(Database.itemsTable[i] != null && Database.itemsTable[i].manufacturer.localeCompare(manufacturer) == 0)
-			{
+	static getByManufacturer(items, manufacturer) {
+		for (var i = 0; i < Database.MAX_SIZE; i++) {
+			if (Database.itemsTable[i] != null && Database.itemsTable[i].manufacturer.localeCompare(manufacturer) == 0) {
 				var item = Database.itemsTable[i];
 				for (var j = 0; j < item.serialNumbers.length; j++) {
 					var subItem = {
@@ -312,6 +303,27 @@ class Database {
 		return arr.filter(function (ele) {
 			return ele != value;
 		});
+	}
+
+	static toCsvArray() {
+		var csvArray = [["Name", "Manufacturer", "Serial Number"]];
+		for (var i = 0; i < Database.MAX_SIZE; i++) {
+			if (Database.itemsTable[i] != null) {
+				var item = Database.itemsTable[i];
+				for (var j = 0; j < item.serialNumbers.length; j++) {
+					var csvObj = {
+						name: item.name,
+						manufacturer: item.manufacturer,
+						serialNumber: item.serialNumbers[j],
+					}
+					csvArray.push(csvObj);
+
+				}
+			}
+		}
+
+		return csvArray;
+
 	}
 
 }

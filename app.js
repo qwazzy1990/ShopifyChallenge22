@@ -1,6 +1,33 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+
+
+//initialize csvWrite object
+const csvWriter = createCsvWriter({
+    path: 'csv/inventory.csv',
+    header: [
+        {
+            id: 'name',
+            title: 'Name'
+        },
+        {
+            id: 'manufacturer',
+            title: 'Manufacturer'
+        },
+        {
+            id: 'serialNumber',
+            title: 'Serial Number'
+        },
+        {
+            id: 'amount',
+            title: 'Amount'
+        },
+    ]
+});//done initialization
+
+
 var today;
 var time;
 
@@ -156,7 +183,7 @@ app.post('/editItem', (req, res) => {
                 time: time
             };
         }//end if
-    
+
         //else a valid request
         else {
             //edit the item. return success
@@ -237,15 +264,15 @@ app.post('/deleteItem', (req, res) => {
                 time: time
             }
         } //invalid condition
-        else if(amount <= 0 || Number.isInteger(amount) == false){
+        else if (amount <= 0 || Number.isInteger(amount) == false) {
             data = {
-                status: 401, 
+                status: 401,
                 time: time
             }
         }//invalid condition
-        
+
         else {
-            if(amount > item.amount)amount = item.amount;
+            if (amount > item.amount) amount = item.amount;
             Database.deleteItem(name, manufacturer, amount);
 
             data = {
@@ -275,32 +302,31 @@ app.post('/deleteItem', (req, res) => {
 
 //view items endpoints
 
-app.post('/viewItems', (req, res)=>{
+app.post('/viewItems', (req, res) => {
 
     var mode = parseInt(req.body.mode);
     var info = req.body.info;
     var data;
     date = new Date();
     time = formatTime(date.getHours(), date.getMinutes(), date.getSeconds());
-    try{
+    try {
 
         var items = Database.viewItems(mode, info);
-        if(items.length == 0)
-        {
+        if (items.length == 0) {
             data = {
-                status: 404, 
+                status: 404,
                 items: items,
                 time: time
             }
-        }else {
+        } else {
             data = {
-                status: 200, 
+                status: 200,
                 items: items,
                 time: time
             }
         }
 
-    }catch(e){
+    } catch (e) {
         data = {
             status: 404,
             time: time
@@ -308,6 +334,54 @@ app.post('/viewItems', (req, res)=>{
     }
 
     res.send(data);
+});
+
+
+//csv enpoint
+app.post('/toCsv', (req, res) => {
+
+    var data;
+    try {
+        date = new Date();
+        time = formatTime(date.getHours(), date.getMinutes(), date.getSeconds());
+        var contentArray = Database.toCsvArray();
+        var content = toCsvString(contentArray);
+        fs.writeFileSync('csv/inventory.csv', content);
+        data = {
+            status: 200,
+            time: time
+        }
+        //file written successfully
+    } catch (err) {
+        data = {
+            status: 404,
+            time: time
+        }
+    }
+
+    res.send(data);
+});
+
+app.get('/download', function (req, res) {
+
+    //if file does not exist, error
+    if (fs.existsSync("csv/inventory.csv") == false) {
+        res.sendStatus(404);
+    } 
+    //file exists, send to client
+    else {
+        try {
+            var file = `${__dirname}/csv/inventory.csv`;
+            res.download(file, function (err) {
+                if (err) {
+                    res.send(err);
+                }
+            }); // Set disposition and send it.
+        } catch (error) {
+            res.send(404);
+        }
+    }
+
 });
 
 
@@ -352,3 +426,26 @@ function formatTime(hours, minutes, seconds) {
     return t;
 
 }//end function
+
+//convert array to csv string
+
+function toCsvString(csvArray) {
+    var s = "";
+    var headers = csvArray[0];
+    for (var i = 0; i < headers.length; i++) {
+        s += headers[i];
+        if (i < headers.length - 1) s += ",";
+    }
+    s += "\n";
+    for (var i = 1; i < csvArray.length; i++) {
+        var obj = csvArray[i];
+        s += obj.name;
+        s += ",";
+        s += obj.manufacturer;
+        s += ",";
+        s += obj.serialNumber;
+        s += "\n";
+    }
+    return s;
+
+}
