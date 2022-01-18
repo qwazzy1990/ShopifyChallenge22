@@ -3,4 +3,3 @@ package.json
 package-lock.json
 PAT.txt
 node_modules/
-csv/

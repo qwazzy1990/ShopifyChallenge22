@@ -240,7 +240,6 @@ app.post('/deleteItem', (req, res) => {
         var name = req.body.name;
         var manufacturer = req.body.manufacturer;
         var amount = parseInt(req.body.amount);
-        console.log(name, manufacturer, amount);
         today = new Date();
         time = formatTime(today.getHours(), today.getMinutes(), today.getSeconds());
 
@@ -277,7 +276,6 @@ app.post('/deleteItem', (req, res) => {
             status: 404,
         };
     }//end catch
-    console.log(data);
     res.send(data);
 });//end endpoint
 
