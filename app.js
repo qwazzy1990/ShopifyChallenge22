@@ -1,49 +1,32 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 
-//initialize csvWrite object
-const csvWriter = createCsvWriter({
-    path: 'csv/inventory.csv',
-    header: [
-        {
-            id: 'name',
-            title: 'Name'
-        },
-        {
-            id: 'manufacturer',
-            title: 'Manufacturer'
-        },
-        {
-            id: 'serialNumber',
-            title: 'Serial Number'
-        },
-        {
-            id: 'amount',
-            title: 'Amount'
-        },
-    ]
-});//done initialization
 
 
+//day and time globals
 var today;
 var time;
 
 
+/**
+ * Set up express
+ */
 var app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-//database
+//Initailize the database
 const Database = require('./database');
-const { exception } = require('console');
 Database.initDataBase();
 
 
+/**
+ * load the home page
+ */
 app.get("/", function (req, res) {
     console.log('loading home page');
     res.sendFile(path.join(__dirname + "/public/index.html"));
@@ -56,6 +39,10 @@ app.get("/style.css", function (req, res) {
 });
 
 
+
+/**
+ * Endpoint for adding an item
+ */
 app.post('/addItem', (req, res) => {
     var name = req.body.name;
     var sNum = req.body.sNum;
@@ -85,17 +72,17 @@ app.post('/addItem', (req, res) => {
     } catch (e) {
         data = {
             status: 404,
-            message: "Server Error"
+            time: time
         };
     }
     res.send(data);
 
-
-
-});
+});//end endpoint
 
 //edit endpoints
 
+
+//endpoint to load the editboard
 app.get('/editBoard', (req, res) => {
     var data;
     try {
@@ -383,12 +370,6 @@ app.get('/download', function (req, res) {
     }
 
 });
-
-
-Database.addItem("johnny", "craig", 197009);
-Database.addItem("johnny", "craig", 197008);
-
-var item = Database.getItem("johnny", "craig");
 
 
 const PORT = process.env.PORT || 3000;

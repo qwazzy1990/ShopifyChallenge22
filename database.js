@@ -213,12 +213,10 @@ class Database {
 
 		}
 		else if (mode == 1) {
-			console.log("mode is 1");
 			//view by amount
 			Database.getByAmount(items, parseInt(key));
 		} else if (mode == 2) {
 			//view by name
-			console.log(`mode is ${mode}`);
 			Database.getByName(items, key);
 		} else if (mode == 3) {
 			//view by manufacturer

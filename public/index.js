@@ -128,6 +128,7 @@ $(document).ready(function () {
 
 
 
+	/***Ajax calls to backend**/
 
 	//ajax call for adding an item
 	$(document).on("click", "#submit-add", () => {
@@ -187,7 +188,7 @@ $(document).ready(function () {
 								$(`#serialNoBoard`).empty();
 								$('#serialNoBoard').append(makeEditList(data.items));
 							} else {
-								alert("Error getting items")
+								alert("Error getting items");
 							}
 						},//end success
 
@@ -296,7 +297,6 @@ $(document).ready(function () {
 	//view all
 	$(document).on("click", "#view-all", () => {
 		//ajax
-		console.log("viewing all");
 		$.ajax({
 			type: `POST`,
 			url: `/viewItems`,
@@ -305,8 +305,14 @@ $(document).ready(function () {
 				info: null
 			},
 			success: (data) => {
+				//if success, append the items
 				if (data.status == 200) {
 					appendViewItems(data, 0, null);
+				}
+				//no results found
+				else if(data.status == 404){
+					$(`#message-board-list`).append(`<li>No items matched your search ${data.time}</li><br>`);
+
 				}
 
 			},
@@ -337,6 +343,10 @@ $(document).ready(function () {
 				if (data.status == 200) {
 					appendViewItems(data, 1, amount);
 				}
+				else if(data.status == 404){
+					$(`#message-board-list`).append(`<li>No items matched your search ${data.time}</li><br>`);
+
+				}
 			},
 			fail: (error) => {
 
@@ -362,6 +372,10 @@ $(document).ready(function () {
 				if (data.status == 200) {
 					appendViewItems(data, 2, name);
 				}
+				else if(data.status == 404){
+					$(`#message-board-list`).append(`<li>No items matched your search ${data.time}</li><br>`);
+
+				}
 			},
 			fail: (error) => {
 
@@ -386,6 +400,10 @@ $(document).ready(function () {
 			success: (data) => {
 				if (data.status == 200) {
 					appendViewItems(data, 3, manufacturer);
+				}
+				else if(data.status == 404){
+					$(`#message-board-list`).append(`<li>No items matched your search ${data.time}</li><br>`);
+
 				}
 			},
 			fail: (error) => {
@@ -415,22 +433,7 @@ $(document).ready(function () {
 		});
 	});
 
-	/*$(document).on("click", "#download-csv", () => {
-		$.ajax({
-			type: 'GET',
-			url: '/download',
-			success: (data) => {
-				console.log("here!!!");
-
-				console.log(data);
-				console.log("here!!!");
-			},
-			fail: (error) => {
-				$(`#message-board-list`).append(`<li>${error}</li><br>`);
-
-			}
-		});
-	});*/
+	
 
 });//end document.ready
 
